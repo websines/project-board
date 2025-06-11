@@ -8,8 +8,5 @@
     "api/**/*": {
       "memory": 1024
     }
-  },
-  "kv": {
-    "preferredRegion": "iad1"
   }
 } 
