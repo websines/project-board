@@ -103,38 +103,204 @@ project-board/
 
 ## 🚀 Deployment
 
-### Deploy to Vercel
+### Deploy to Vercel with Upstash KV
 
 #### Option 1: One-Click Deploy (Recommended)
-Use the [Deploy with Vercel button](#one-click-deployment) at the top of this README.
+Use the [Deploy with Vercel button](#one-click-deployment) at the top of this README. This automatically sets up Vercel KV (powered by Upstash) for data persistence.
 
-#### Option 2: Manual Deploy
-1. **Install Vercel CLI** (if not already installed):
+#### Option 2: Manual Deploy via Vercel Dashboard
+1. **Fork this repository** to your GitHub account
+2. **Go to [Vercel Dashboard](https://vercel.com/dashboard)**
+3. **Click "New Project"** and import your forked repository
+4. **Add Vercel KV Integration**:
+   - In project settings, go to "Storage" tab
+   - Click "Create Store" → "KV"
+   - Name your store (e.g., "project-board-kv")
+   - Click "Create and Connect"
+5. **Deploy** - Your project will automatically have KV environment variables configured
+
+#### Option 3: Manual Deploy via CLI
+1. **Install Vercel CLI**:
    ```bash
    npm i -g vercel
    ```
 
-2. **Deploy from project directory**:
+2. **Login to Vercel**:
+   ```bash
+   vercel login
+   ```
+
+3. **Deploy from project directory**:
    ```bash
    cd project-board
    vercel --prod
    ```
 
-3. **Set up Vercel KV Storage** (for persistence):
+4. **Set up Vercel KV Storage**:
    ```bash
-   # Add KV storage to your project
-   vercel kv create
+   # Create a new KV store
+   vercel kv create project-board-kv
    
-   # The environment variables will be automatically added to your project
+   # Link the store to your project (follow the prompts)
+   vercel env pull .env.local
    ```
 
-### Other Deployment Options
+#### Option 4: Manual Upstash KV Setup (Any Platform)
+If deploying to platforms other than Vercel, you can use Upstash directly:
+
+1. **Create Upstash Account**:
+   - Go to [Upstash Console](https://console.upstash.com/)
+   - Sign up for a free account
+
+2. **Create Redis Database**:
+   - Click "Create Database"
+   - Choose a name (e.g., "project-board")
+   - Select region closest to your deployment
+   - Choose "Free" tier
+
+3. **Get Connection Details**:
+   - Click on your database
+   - Copy the "REST URL" and "REST Token"
+
+4. **Set Environment Variables**:
+   ```bash
+   # Add to your .env.local or deployment platform
+   KV_REST_API_URL="https://your-database-url.upstash.io"
+   KV_REST_API_TOKEN="your-rest-token"
+   ```
+
+### Automatic Deployment (CI/CD)
+
+#### GitHub Actions with Vercel
+Create `.github/workflows/deploy.yml`:
+
+```yaml
+name: Deploy to Vercel
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+        
+      - name: Build project
+        run: npm run build
+        
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+        
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+```
+
+**Required GitHub Secrets**:
+- `VERCEL_TOKEN`: Your Vercel API token
+- `VERCEL_ORG_ID`: Your Vercel team/organization ID
+- `VERCEL_PROJECT_ID`: Your Vercel project ID
+
+#### Setup GitHub Secrets:
+1. **Get Vercel Token**:
+   ```bash
+   vercel login
+   # Go to https://vercel.com/account/tokens to create a token
+   ```
+
+2. **Get Project IDs**:
+   ```bash
+   cd project-board
+   vercel link
+   # Check .vercel/project.json for the IDs
+   ```
+
+3. **Add to GitHub**:
+   - Go to your repository → Settings → Secrets and variables → Actions
+   - Add the three secrets above
+
+### Environment Variables for Production
+
+Ensure these environment variables are set in your deployment:
+
+```bash
+# Required for Upstash KV (auto-set with Vercel KV)
+KV_REST_API_URL="your-kv-rest-url"
+KV_REST_API_TOKEN="your-kv-rest-token"
+
+# Optional customization
+NEXT_PUBLIC_PROJECT_SECTIONS="Proof of Concept,Development,Hyper Care"
+NEXT_PUBLIC_TEAM_MEMBERS_CSV="Alex,Sarah,Michael,Emma"
+
+# Optional: Analytics
+VERCEL_ANALYTICS_ID="your-analytics-id"
+```
+
+### Other Deployment Platforms
 
 The app can be deployed to any platform that supports Next.js:
-- Netlify
-- Railway
-- Digital Ocean App Platform
-- AWS Amplify
+
+#### Netlify
+1. Connect your GitHub repository
+2. Build command: `npm run build`
+3. Publish directory: `dist`
+4. Add Upstash KV environment variables
+
+#### Railway
+1. Connect your GitHub repository
+2. Add Upstash KV environment variables
+3. Railway will auto-detect Next.js and deploy
+
+#### Digital Ocean App Platform
+1. Create new app from GitHub
+2. Configure build settings for Next.js
+3. Add Upstash KV environment variables
+
+#### AWS Amplify
+1. Connect your GitHub repository
+2. Add build settings for Next.js
+3. Add Upstash KV environment variables
+
+### Troubleshooting Deployment
+
+**Common Issues**:
+
+1. **Build fails with dependency errors**:
+   ```bash
+   # Use legacy peer deps flag
+   npm install --legacy-peer-deps
+   ```
+
+2. **KV connection issues**:
+   - Verify `KV_REST_API_URL` and `KV_REST_API_TOKEN` are set
+   - Check Upstash dashboard for correct URLs
+   - Ensure region compatibility
+
+3. **App falls back to localStorage**:
+   - This is expected behavior when KV is not configured
+   - Check environment variables in deployment platform
 
 ## 🎮 Usage
 
