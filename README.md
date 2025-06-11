@@ -4,7 +4,7 @@ A modern, real-time collaborative project board application built with Next.js 1
 
 ## One-Click Deployment
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fhalfaipg%2Fproject-board&project-name=project-board&repository-name=project-board&demo-title=Project%20Board&demo-description=A%20modern%20task%20management%20board%20for%20teams&demo-url=https%3A%2F%2Fproject-board-demo.vercel.app&integration-ids=oac_V3R1GIpkoJorr6fqynnuN&external-id=project-board)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fwebsines%2Fproject-board&project-name=project-board&repository-name=project-board&demo-title=Project%20Board&demo-description=A%20modern%20task%20management%20board%20for%20teams&demo-url=https%3A%2F%2Fproject-board-demo.vercel.app&integration-ids=oac_V3R1GIpkoJorr6fqynnuN&stores=%5B%7B%22type%22%3A%22kv%22%7D%5D&external-id=project-board)
 
 The one-click deploy button above will:
 1. Clone this repository to your GitHub account
